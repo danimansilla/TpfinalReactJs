@@ -1,85 +1,125 @@
-import React, { Component } from 'react';
-import {Form,Button} from 'react-bootstrap';
+import React,{Component} from 'react';
 import firebase from '../Componentes/Firebase';
+import { withRouter } from 'react-router-dom';
+import EcommerceContext from '../Context/EcommerceContext';
+import { Card,Form,Button,Spinner,Alert } from 'react-bootstrap';
+import { Formik } from 'formik';
 
 
 class LoginPage extends Component{
+    static contextType = EcommerceContext;
     constructor(props){
-    super(props);
-    this.handleSubmit =  this.handleSubmit.bind(this)
-    this.handleChange = this.handleChange.bind(this)
-    this.state={
-        email:'',
-        password:''
+        super(props);
+        this.state={
+            spinner:false,
+            error:false
+        }
     }
-}
-handleSubmit(e){
-    let email=this.state.email;
-    let password=this.state.password;
 
-
-    firebase.auth.signInWithEmailAndPassword(email, password)
-    .then((data) => {
-       console.log("Login")
-       localStorage.setItem('login',JSON.stringify(data.user))
-            const { history } = this.props;
-            history.push('/');
-        })
-    .catch(error => {
-
-        console.log("Error",error)
-
-        alert(error);
-    });
-
-    e.preventDefault();
-   
-
-}
-handleChange(e){
+     
+render(){
     
-    const target = e.target;
-    const value = target.value
-  //  const value = target.type === 'checkbox' ? target.checked : target.value;
-
-    const name = target.name;
-    
-    this.setState({
-        [name]:value
-    })
-    e.preventDefault();
-}
-    render(){
- 
     return(
-       
-        <div>
-                <Form onSubmit={this.handleSubmit}>
-                    <Form.Group controlId="formBasicEmail">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control type="text" placeholder="Ingrese su usuario" 
-                        name="email" value={this.state.email} onChange={this.handleChange} />
-                       
-                    </Form.Group>
+        <>
+            <Card style={{ width: '80%', margin:'auto' }}>
+                <Card.Body>
+                <Card.Title>Ingresar</Card.Title>
+                <Formik
+                    initialValues={{ email: '', password: '' }}
+                    validate={values => {
+                        const errors = {};
+                        if (!values.password) {
+                            
+                            errors.password = 'Required';
+                        }
+                        if (!values.email) {
+                            errors.email = 'Required';
+                        } else if (
+                            !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+                        ) {
+                            errors.email = 'Invalid email address';
+                        }
+                        
+                        return errors;
+                    }}
+                    onSubmit={(values, { setSubmitting }) => {
+                        this.setState({
+                            spinner:true
+                        })
+                        console.log(values.email, values.password)
+                        firebase.auth.signInWithEmailAndPassword(values.email, values.password)
+                        .then((data) => {
+                            this.setState({
+                                spinner:false
+                            })
+                            setSubmitting(false);
+                            this.context.loginUser(JSON.stringify(data.user))
+                            const { history } = this.props;
+                            history.push('/');
+                        })
+                        .catch(error => {
+                            console.log("Error",error)
+                            if(error.code=="auth/user-not-found"){
+                                this.state.error=true;
+                                this.setState({
+                                    spinner:false,
+                                    error:true
+                                })
+                                setSubmitting(false);
+                            }
+                        });
+                        
+                    }}
+                    >
+                    {({
+                        values,
+                        errors,
+                        touched,
+                        handleChange,
+                        handleSubmit,
+                        isSubmitting,
+                        /* and other goodies */
+                    }) => (
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group controlId="formBasicEmail">
+                                    <Form.Label>Email address</Form.Label>
+                                    <Form.Control type="email" placeholder="Enter email" name="email" value={values.email} onChange={handleChange} />
+                                    {errors.email && touched.email && errors.email}
+                                </Form.Group>
 
-                    <Form.Group controlId="formBasicPassword">
-                        <Form.Label>Contraseña</Form.Label>
-                        <Form.Control type="password" placeholder="Ingrese su contraseña"
-                        name="password" value={this.state.password} onChange={this.handleChange} />
-                    </Form.Group>
-                    <Form.Group controlId="formBasicCheckbox">
-                    </Form.Group>
-                    <Button variant="primary" type="submit">
-                        Ingresar
-                    </Button>
-                </Form>
+                                <Form.Group controlId="formBasicPassword">
+                                    <Form.Label>Password</Form.Label>
+                                    <Form.Control type="password" placeholder="Password" name="password" value={values.password} onChange={handleChange} />
+                                    {errors.password && touched.password && errors.password}
+                                </Form.Group>
 
-                
-        </div>
-
+                                <Button variant="primary" type="submit" disabled={isSubmitting}>
+                                    {
+                                        this.state.spinner && 
+                                        <Spinner animation="border" variant="light" size="sm" />
+                                    }
+                                    
+                                    Ingresar
+                                </Button>
+                            </Form>
+                    )}
+                </Formik>
+                {this.state.error && 
+                    <>
+                    <Alert variant={'danger'}>
+                        Usuario y/o contraseña incorrecto        
+                    </Alert>
+                    </>
+                }
+                    
+                </Card.Body>
+            </Card>
+            
+        </>
+            
+        
     )
-    }
+}
 }
 
-
-export default LoginPage;
+export default withRouter(LoginPage);
