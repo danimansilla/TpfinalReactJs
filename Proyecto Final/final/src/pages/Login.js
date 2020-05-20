@@ -1,12 +1,13 @@
 import React,{Component} from 'react';
-import firebase from '../Componentes/Firebase';
-import { withRouter } from 'react-router-dom';
+import {Form, Button, Container, Row, Col, Card, Alert, Spinner} from 'react-bootstrap';
+import ciruelas from '../img/ciruelas.jpg';
+import Footer from '../componentes/Footer';
 import EcommerceContext from '../Context/EcommerceContext';
-import { Card,Form,Button,Spinner,Alert } from 'react-bootstrap';
+import firebase from '../componentes/Firebase';
 import { Formik } from 'formik';
+import { withRouter } from 'react-router-dom';
 
-
-class LoginPage extends Component{
+class Login extends Component{
     static contextType = EcommerceContext;
     constructor(props){
         super(props);
@@ -15,25 +16,34 @@ class LoginPage extends Component{
             error:false
         }
     }
-
-     
-render(){
-    
+    render(){
     return(
         <>
-            <Card style={{ width: '80%', margin:'auto' }}>
-                <Card.Body>
-                <Card.Title>Ingresar</Card.Title>
+
+        <div>
+            <Container> 
+              <Row className="justify-content-md-center">  
+
+                <Col xs={12} md={4} style={{marginTop:"8%"}}>
+
+                    <Card style={{ width: '18rem'}}>
+                            <Card.Img variant="top" src={ciruelas} width="290px" height="400px"/>
+                    </Card>
+
+
+                </Col>   
+
+               <Col xs={12} md={6} style={{marginTop:"8%"}}>   
                 <Formik
-                    initialValues={{ email: '', password: '' }}
-                    validate={values => {
+                      initialValues={{ email: '', password: '' }}
+                      validate={values => {
                         const errors = {};
                         if (!values.password) {
                             
-                            errors.password = 'Required';
+                            errors.password = 'Es requerido';
                         }
                         if (!values.email) {
-                            errors.email = 'Required';
+                            errors.email = 'Es requerido el email';
                         } else if (
                             !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
                         ) {
@@ -71,7 +81,7 @@ render(){
                         
                     }}
                     >
-                    {({
+                            {({
                         values,
                         errors,
                         touched,
@@ -80,49 +90,50 @@ render(){
                         isSubmitting,
                         /* and other goodies */
                     }) => (
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group controlId="formBasicEmail">
-                                    <Form.Label>Email address</Form.Label>
-                                    <Form.Control type="email" placeholder="Enter email" 
-                                    name="email" value={values.email} onChange={handleChange} />
-                                    {errors.email && touched.email && errors.email}
-                                </Form.Group>
+                        <Form onSubmit={handleSubmit}>
+                        <Form.Group controlId="formBasicEmail">
+                            <Form.Control type="email" placeholder="Ingresar Usuario" 
+                            name="email" value={values.email} onChange={handleChange} />
+                            {errors.email && touched.email && errors.email}
+                        </Form.Group>
 
-                                <Form.Group controlId="formBasicPassword">
-                                    <Form.Label>Password</Form.Label>
-                                    <Form.Control type="password" placeholder="Password" 
-                                    name="password" value={values.password} onChange={handleChange} />
-                                    {errors.password && touched.password && errors.password}
-                                </Form.Group>
-
-                                <Button variant="primary" type="submit" 
-                                disabled={isSubmitting}>
-                                    {
-                                        this.state.spinner && 
-                                        <Spinner animation="border" variant="light" size="sm" />
-                                    }
-                                    
-                                    Ingresar
-                                </Button>
-                            </Form>
-                    )}
+                        <Form.Group controlId="formBasicPassword">
+                            <Form.Control type="password" placeholder="Password" 
+                             name="password" value={values.password} onChange={handleChange} />
+                             {errors.password && touched.password && errors.password}
+                        </Form.Group>
+                    
+                        <Button variant="primary" type="submit" style={{backgroundColor:"#FF650D" , borderStyle:"none"}}
+                        disabled={isSubmitting}>
+                        {
+                            this.state.spinner && 
+                            <Spinner animation="border" variant="light" size="sm" />
+                        }
+                        
+                        Ingresar
+                        </Button>
+                        
+                        </Form>
+                          )}
                 </Formik>
                 {this.state.error && 
                     <>
+                    Hola
                     <Alert variant={'danger'}>
-                        Usuario y/o contraseña incorrecto        
+                        Usuario y/o contraseña incorrecto   
+                             
                     </Alert>
                     </>
                 }
-                    
-                </Card.Body>
-            </Card>
-            
+            </Col>   
+
+            </Row>   
+         </Container>   
+         <Footer/> 
+        </div>
         </>
-            
-        
-    )
-}
+    );
+    }
 }
 
-export default withRouter(LoginPage);
+export default withRouter(Login);
